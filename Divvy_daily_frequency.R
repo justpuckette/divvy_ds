@@ -46,7 +46,7 @@ myholidays  <- dates(as.character(holiday(2012:2019,hlist)),format="Y-m-d")
 # load weather data for Chicago O'Hare
 # https://www.ncdc.noaa.gov/cdo-web/search
 weather <- read.csv("C:/Divvy/chicago_ohare_weather.csv")
-weather$DATE <- as.Date(weather$DATE, "%Y-%m-%d")  
+weather$DATE <- as.Date(weather$DATE, "%m/%d/%Y")  
 
 
 # temporary dates for testing
@@ -63,6 +63,7 @@ nrides <- 0
 # pre-allocate data frame columns for the for-loop
 df$isholiday <- NA
 df$isweekend <- NA
+df$AWND      <- NA
 df$TMAX      <- NA
 df$TMIN      <- NA
 df$TAVG      <- NA
@@ -109,6 +110,7 @@ for (i in 1:nrow(df)) {
   date                          <- df$date[i]
   df$isholiday[df$date == date] <- is.holiday(date, myholidays)
   df$isweekend[df$date == date] <- is.weekend(date)
+  df$AWND[df$date == date]      <- weather$AWND[weather$DATE==date]
   df$TMAX[df$date == date]      <- weather$TMAX[weather$DATE==date]
   df$TMIN[df$date == date]      <- weather$TMIN[weather$DATE==date]
   df$TAVG[df$date == date]      <- weather$TAVG[weather$DATE==date]
