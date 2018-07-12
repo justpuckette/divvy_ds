@@ -8,8 +8,7 @@
 # -------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------
-# Load one set of Divvy data and plot the most common to/from staion
-# pairings
+# Load Divvy data and reshape for regression analysis
 
 # install.packages("plyr")
 # install.packages("ggmap")
@@ -23,17 +22,41 @@ library(timeDate)
 library(chron)
 library(corrplot)
 
+
+# ----------------------------------------------------------------------- #
+#   Load Data (Update This for your own file structure)                   #
+# ----------------------------------------------------------------------- #
+
+
+# Update based on your working directory
+# Include a trailing forward slash at the end! "/"
+# Put all the Divvy ride data here with no other files
+# Do NOT put the Divvy station data here
+mypath = "C:/Divvy/data/"
+
 # load trip data and station data from disk
-Divvy_Trips_2017_Q3 <- read.csv("C:/Divvy/Divvy_Trips_2017_Q3.csv")
+# Update this with your own filepath 
 station_id          <- read.csv("C:/Divvy/Divvy_Stations_2017_Q3Q4.csv") 
 
+
+# ----------------------------------------------------------------------- #
+#   Process Data                                                          #
+# ----------------------------------------------------------------------- #
+
+file_names <- dir(mypath) 
+file_names <- paste(mypath,file_names, sep = "", collapse = NULL)
+
+Divvy_Trips <- do.call(rbind,lapply(file_names,read.csv))
+
+
 # convert the start_time stamp into a date 
-Divvy_Trips_2017_Q3$date <- as.Date(Divvy_Trips_2017_Q3$start_time, "%m/%d/%Y")
+Divvy_Trips$date <- as.Date(Divvy_Trips$start_time, "%m/%d/%Y")
+Divvy_Trips <- Divvy_Trips[order(Divvy_Trips$date),]
 
 
 # create a data frame to populate with agregate data
-df <- as.data.frame(seq(tail(Divvy_Trips_2017_Q3$date, n=1), 
-                        Divvy_Trips_2017_Q3$date[1], by="days"))
+df <- as.data.frame(seq(Divvy_Trips$date[1], tail(Divvy_Trips$date, n=1), 
+                         by="days"))
 colnames(df) <- "date"
 
 
@@ -57,44 +80,79 @@ weather$DATE <- as.Date(weather$DATE, "%m/%d/%Y")
 
 
 # pre-allocate variables for the for-loop
-date <- Divvy_Trips_2017_Q3$date[1]
-nrides <- 0
+date       <- Divvy_Trips$date[1]
+nrides     <- 0
+nrides_76  <- 0
+nrides_35  <- 0
+nrides_177 <- 0
+nrides_268 <- 0
+nrides_85  <- 0
+
+
 
 # pre-allocate data frame columns for the for-loop
-df$isholiday <- NA
-df$isweekend <- NA
-df$AWND      <- NA
-df$TMAX      <- NA
-df$TMIN      <- NA
-df$TAVG      <- NA
-df$TRNG      <- NA
-df$PRCP      <- NA
-df$SNOW      <- NA
+df$isholiday      <- NA
+df$isweekend      <- NA
+df$AWND           <- NA
+df$TMAX           <- NA
+df$TMIN           <- NA
+df$TAVG           <- NA
+df$TRNG           <- NA
+df$PRCP           <- NA
+df$SNOW           <- NA
+df$nrides         <- 0
+df$nrides_76      <- 0
+df$nrides_35      <- 0
+df$nrides_177     <- 0
+df$nrides_268     <- 0
+df$nrides_85      <- 0
+df$nrides_76r     <- 0
+df$nrides_35r     <- 0
+df$nrides_177r    <- 0
+df$nrides_268r    <- 0
+df$nrides_85r     <- 0
 
 
 
-# create a new agregate data frame
-for (i in 1:nrow(Divvy_Trips_2017_Q3)) {
+# Count the number of rides for the five most popular stations
+for (i in 1:nrow(Divvy_Trips)) {
 
-  if (i == nrow(Divvy_Trips_2017_Q3)) {
-    # fill the data frame for the last date in the list
-    # without this, the last date is skipped 
-    df$nrides[df$date == date] <- nrides
-
-  } else if (Divvy_Trips_2017_Q3$date[i] == date) {
-    nrides <- nrides + 1
-    
-  } else {
-    df$nrides[df$date == date] <- nrides
-    nrides       <- 1
-    date         <- Divvy_Trips_2017_Q3$date[i]
+  if (Divvy_Trips$from_station_id[i] == 76) {
+    df$nrides_76[df$date == Divvy_Trips$date[i]] = df$nrides_76[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 76 & Divvy_Trips$to_station_id[i]== 76) {
+      df$nrides_76r[df$date == Divvy_Trips$date[i]] = df$nrides_76r[df$date == Divvy_Trips$date[i]] + 1
+    }
+  } 
+  else if (Divvy_Trips$from_station_id[i] == 35) {
+    df$nrides_35[df$date == Divvy_Trips$date[i]] = df$nrides_35[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 35 & Divvy_Trips$to_station_id[i]== 35) {
+      df$nrides_35r[df$date == Divvy_Trips$date[i]] = df$nrides_35r[df$date == Divvy_Trips$date[i]] + 1
+    }
+  }
+  else if (Divvy_Trips$from_station_id[i] == 177) {
+    df$nrides_177[df$date == Divvy_Trips$date[i]] = df$nrides_177[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 177 & Divvy_Trips$to_station_id[i]== 177) {
+      df$nrides_177r[df$date == Divvy_Trips$date[i]] = df$nrides_177r[df$date == Divvy_Trips$date[i]] + 1
+    }
+  }
+  else if (Divvy_Trips$from_station_id[i] == 268) {
+    df$nrides_268[df$date == Divvy_Trips$date[i]] = df$nrides_268[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 268 & Divvy_Trips$to_station_id[i]== 268) {
+      df$nrides_268r[df$date == Divvy_Trips$date[i]] = df$nrides_268r[df$date == Divvy_Trips$date[i]] + 1
+    }
+  }
+  else if (Divvy_Trips$from_station_id[i] == 85) {
+    df$nrides_85[df$date == Divvy_Trips$date[i]] = df$nrides_85[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 85 & Divvy_Trips$to_station_id[i]== 85) {
+      df$nrides_85r[df$date == Divvy_Trips$date[i]] = df$nrides_85r[df$date == Divvy_Trips$date[i]] + 1
+    }
   }
 }
 
 
 # Count the number of rides per day (using start date)
 # Tabulate Dates of Divvy Data
-date_tab <- table(cut(Divvy_Trips_2017_Q3$date, 'day'))
+date_tab <- table(cut(Divvy_Trips$date, 'day'))
 # Format
 date_frequency <- data.frame(Date=format(as.Date(names(date_tab)), "%Y-%m-%d"),
            Frequency=as.vector(date_tab))
@@ -104,6 +162,8 @@ for (i in 1:nrow(df)) {
   date  <- as.Date(df$date[i], "%Y-%m-%d")
   df$nrides[i] <- date_frequency$Frequency[date_frequency$Date==date]
 }
+
+
 
 
 for (i in 1:nrow(df)) {
@@ -126,19 +186,34 @@ correlations <- cor(dfcor)
 corrplot(correlations, method="number")
 
 
+# ----------------------------------------------------------------------- #
+#  Regression Model(s)                                                    #
+# ----------------------------------------------------------------------- #
+
+df$PRCP2 <- df$PRCP
 
 
+model_nrides <- lm(nrides ~ isholiday + isweekend + AWND + TMAX + 
+                     TMIN + TAVG + PRCP + PRCP2+ SNOW, data = df)
+summary(model_nrides)
+
+predict(model_nrides)
+
+df$nrides_model <- predict(model_nrides,df)
+
+plot(df$nrides_model-df$nrides)
+df$nrides_diff <- df$nrides_model-df$nrides
 
 
-tail(Divvy_Trips_2017_Q3$trip_id, n=1)
+# tail(Divvy_Trips$trip_id, n=1)
 
 # ----------------------------------------------------------------------- #
-#   Find most frequent Divvy station pairings                             #
+#   Plot most frequent Divvy station pairings                             #
 # ----------------------------------------------------------------------- #
 
 
 # count the number of unique station start-end pairings
-station_freq      <- ddply(Divvy_Trips_2017_Q3,
+station_freq      <- ddply(Divvy_Trips,
                                 .(from_station_id,to_station_id),nrow)
 station_freq_sort <- station_freq[order(-station_freq[["V1"]]),]
 
