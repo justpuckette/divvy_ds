@@ -10,11 +10,11 @@
 # -------------------------------------------------------------------------
 # Load Divvy data and reshape for regression analysis
 
-# install.packages("plyr")
-# install.packages("ggmap")
-# install.packages("timeDate")
-# install.packages("chron")
-# install.packages("corrplot")
+install.packages("plyr")
+install.packages("ggmap")
+install.packages("timeDate")
+install.packages("chron")
+install.packages("corrplot")
 
 library(plyr)
 library(ggmap)
@@ -38,6 +38,10 @@ mypath = "C:/Divvy/data/"
 # Update this with your own filepath 
 station_id          <- read.csv("C:/Divvy/Divvy_Stations_2017_Q3Q4.csv") 
 
+# load weather data for Chicago O'Hare
+# https://www.ncdc.noaa.gov/cdo-web/search
+weather <- read.csv("C:/Divvy/chicago_ohare_weather.csv")
+weather$DATE <- as.Date(weather$DATE, "%m/%d/%Y")  
 
 # ----------------------------------------------------------------------- #
 #   Process Data                                                          #
@@ -66,10 +70,7 @@ hlist <- c("USChristmasDay","USGoodFriday","USIndependenceDay","USLaborDay",
 myholidays  <- dates(as.character(holiday(2012:2019,hlist)),format="Y-m-d")
 
 
-# load weather data for Chicago O'Hare
-# https://www.ncdc.noaa.gov/cdo-web/search
-weather <- read.csv("C:/Divvy/chicago_ohare_weather.csv")
-weather$DATE <- as.Date(weather$DATE, "%m/%d/%Y")  
+
 
 
 # temporary dates for testing
@@ -186,26 +187,106 @@ correlations <- cor(dfcor)
 corrplot(correlations, method="number")
 
 
+
+
+# make columns for days of the week
+# it doesn't matter which day is which for now, just that
+#     they're consistent
+df$weekday_color <- 0
+df$day1 <- 0
+df$day2 <- 0
+df$day3 <- 0
+df$day4 <- 0
+df$day5 <- 0
+df$day6 <- 0
+
+cl = 1;
+for (i in 1:nrow(df)) {
+  if (cl == 1) {
+    df$weekday_color[i] <- "red"
+    df$day1[i] = 1
+  } else if (cl == 2) {
+    df$weekday_color[i] <- "orange"
+    df$day2[i] = 1
+  } else if (cl == 3) {
+    df$weekday_color[i] <- "yellow"
+    df$day3[i] = 1
+  } else if (cl == 4) {
+    df$weekday_color[i] <- "green"
+    df$day4[i] = 1
+  } else if (cl == 5) {
+    df$weekday_color[i] <- "blue"
+    df$day5[i] = 1
+  } else if (cl == 6) {
+    df$weekday_color[i] <- "purple"
+    df$day6[i] = 1
+  } else if (cl == 7) {
+    df$weekday_color[i] <- "brown"
+    df$day1[i] = 1
+  }
+  if (cl == 7) {
+    cl = 1
+  } else {
+    cl = cl + 1
+  }
+}
+
+
+
+
+
+
 # ----------------------------------------------------------------------- #
 #  Regression Model(s)                                                    #
 # ----------------------------------------------------------------------- #
 
+# perhaps inches of precipitation has a stronger correlation
+# squared 
 df$PRCP2 <- df$PRCP
 
-
+# first, model the number of rides per day
 model_nrides <- lm(nrides ~ isholiday + isweekend + AWND + TMAX + 
-                     TMIN + TAVG + PRCP + PRCP2+ SNOW, data = df)
+                     TMIN + TAVG + PRCP + PRCP2 + SNOW + 
+                     day1 + day2+ day3 + day4 + day5 + day6, data = df)
 summary(model_nrides)
-
-predict(model_nrides)
 
 df$nrides_model <- predict(model_nrides,df)
 
-plot(df$nrides_model-df$nrides)
-df$nrides_diff <- df$nrides_model-df$nrides
+
+plot(df$nrides_model-df$nrides, col=df$weekday_color)
+df$nrides_diff   <- df$nrides_model-df$nrides
+
+
+
+# second, model the number of rides per day from station 76
+model_nrides_76 <- lm(nrides_76 ~ isholiday + isweekend + AWND + TMAX + 
+                        TMIN + TAVG + PRCP + PRCP2 + SNOW + 
+                        day1 + day2+ day3 + day4 + day5 + day6, data = df)
+summary(model_nrides_76)
+df$nrides_76_model <- predict(model_nrides_76,df)
+
+plot(df$nrides_76_model-df$nrides_76, col=df$weekday_color)
+
+# third, model the number of rides per day from sstation 76 that also
+# end at station 76 
+
+model_nrides_76r <- lm(nrides_76r ~ isholiday + isweekend + AWND + TMAX + 
+                         TMIN + TAVG + PRCP + PRCP2 + SNOW + 
+                         day1 + day2+ day3 + day4 + day5 + day6, data = df)
+summary(model_nrides_76r)
+
+
+
+
+
 
 
 # tail(Divvy_Trips$trip_id, n=1)
+
+
+
+
+
 
 # ----------------------------------------------------------------------- #
 #   Plot most frequent Divvy station pairings                             #
