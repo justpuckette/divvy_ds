@@ -432,7 +432,7 @@ for (i in 1:nrow(df)) {
   }
 }
 
-
+# The ridership clearly 
 
 
 
@@ -448,7 +448,7 @@ df$PRCP2 <- df$PRCP
 # first, model the number of rides per day
 model_nrides <- lm(nrides ~ isholiday + isweekend + AWND + TMAX + 
                      TMIN + TAVG + PRCP + PRCP2 + SNOW + 
-                     day1 + day2+ day3 + day4 + day5 + day6, cps, data = df)
+                     day1 + day2+ day3 + day4 + day5 + day6 + cps, data = df)
 summary(model_nrides)
 
 df$nrides_model <- predict(model_nrides,df)
@@ -463,7 +463,7 @@ df$nrides_diff   <- df$nrides_model-df$nrides
 # second, model the number of rides per day from station 76
 model_nrides_76 <- lm(nrides_76 ~ isholiday + isweekend + AWND + TMAX + 
                         TMIN + TAVG + PRCP + PRCP2 + SNOW + 
-                        day1 + day2+ day3 + day4 + day5 + day6, data = df)
+                        day1 + day2+ day3 + day4 + day5 + day6 + cps, data = df)
 summary(model_nrides_76)
 df$nrides_76_model <- predict(model_nrides_76,df)
 
@@ -476,7 +476,7 @@ plot(df$nrides_76_model-df$nrides_76, col=df$weekday_color)
 
 model_nrides_76r <- lm(nrides_76r ~ isholiday + isweekend + AWND + TMAX + 
                          TMIN + TAVG + PRCP + PRCP2 + SNOW + 
-                         day1 + day2+ day3 + day4 + day5 + day6, data = df)
+                         day1 + day2+ day3 + day4 + day5 + day6 + cps, data = df)
 summary(model_nrides_76r)
 
 
