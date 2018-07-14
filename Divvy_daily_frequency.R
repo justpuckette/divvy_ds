@@ -10,11 +10,11 @@
 # -------------------------------------------------------------------------
 # Load Divvy data and reshape for regression analysis
 
-install.packages("plyr")
-install.packages("ggmap")
-install.packages("timeDate")
-install.packages("chron")
-install.packages("corrplot")
+# install.packages("plyr")
+# install.packages("ggmap")
+# install.packages("timeDate")
+# install.packages("chron")
+# install.packages("corrplot")
 
 library(plyr)
 library(ggmap)
@@ -43,14 +43,31 @@ station_id          <- read.csv("C:/Divvy/Divvy_Stations_2017_Q3Q4.csv")
 weather <- read.csv("C:/Divvy/chicago_ohare_weather.csv")
 weather$DATE <- as.Date(weather$DATE, "%m/%d/%Y")  
 
+file_names <- dir(mypath) 
+file_names <- paste(mypath,file_names, sep = "", collapse = NULL)
+
+for (i in 1:length(file_names)) {
+  df_temp <- read.csv(file_names[i]) 
+  colnames(df_temp) <- c("trip_id", "start_time", "end_time", "bikeid", 
+                         "tripduration", "from_station_id", 
+                         "from_station_name", "to_station_id",
+                         "to_station_name", "usertype" , "gender" ,
+                         "birthyear")
+  if (i == 1) {
+    Divvy_Trips <- df_temp
+  } else {
+    Divvy_Trips <- rbind(Divvy_Trips, df_temp) 
+  }
+  
+}
+
+
+
 # ----------------------------------------------------------------------- #
 #   Process Data                                                          #
 # ----------------------------------------------------------------------- #
 
-file_names <- dir(mypath) 
-file_names <- paste(mypath,file_names, sep = "", collapse = NULL)
 
-Divvy_Trips <- do.call(rbind,lapply(file_names,read.csv))
 
 
 # convert the start_time stamp into a date 
@@ -276,9 +293,11 @@ model_nrides_76r <- lm(nrides_76r ~ isholiday + isweekend + AWND + TMAX +
 summary(model_nrides_76r)
 
 
+# save(correlations, date_frequency, df, dfcor, Divvy_Trips, 
+#      model_nrides, model_nrides_76, model_nrides_76r,
+#      station_id, hlist, myholidays, file = "Divvy.RData")
 
-
-
+/
 
 
 # tail(Divvy_Trips$trip_id, n=1)
