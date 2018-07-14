@@ -64,10 +64,11 @@ for (i in 1:length(file_names)) {
 
 
 # ----------------------------------------------------------------------- #
-#   Process Data                                                          #
+#   Process Data, Create a new dataframe with one row per day             #
 # ----------------------------------------------------------------------- #
 
-
+# New data frame df will have daily rider numbers, weather data, and 
+# other parameters used for the regression
 
 
 # convert the start_time stamp into a date 
@@ -82,10 +83,167 @@ colnames(df) <- "date"
 
 
 # define holidays
-hlist <- c("USChristmasDay","USGoodFriday","USIndependenceDay","USLaborDay",
-           "USNewYearsDay","USThanksgivingDay")        
+hlist <- c("USChristmasDay","USGoodFriday","USIndependenceDay",
+           "USLaborDay", "USNewYearsDay","USThanksgivingDay")
 myholidays  <- dates(as.character(holiday(2012:2019,hlist)),format="Y-m-d")
 
+# Day off according to the chicago public school calendar?
+
+cps_dates <-c("2016-01-01",
+              "2016-02-05",
+              "2016-02-15",
+              "2016-04-08",
+              "2016-04-18",
+              "2016-04-19",
+              "2016-04-20",
+              "2016-04-21",
+              "2016-04-22",
+              "2016-05-30",
+              "2016-06-22",
+              "2016-06-23",
+              "2016-06-24",
+              "2016-06-27",
+              "2016-06-28",
+              "2016-06-29",
+              "2016-06-30",
+              "2016-07-01",
+              "2016-07-04",
+              "2016-07-05",
+              "2016-07-06",
+              "2016-07-07",
+              "2016-07-08",
+              "2016-07-11",
+              "2016-07-12",
+              "2016-07-13",
+              "2016-07-14",
+              "2016-07-15",
+              "2016-07-18",
+              "2016-07-19",
+              "2016-07-20",
+              "2016-07-21",
+              "2016-07-22",
+              "2016-07-25",
+              "2016-07-26",
+              "2016-07-27",
+              "2016-07-28",
+              "2016-07-29",
+              "2016-08-01",
+              "2016-08-02",
+              "2016-08-03",
+              "2016-08-04",
+              "2016-08-05",
+              "2016-08-08",
+              "2016-08-09",
+              "2016-08-10",
+              "2016-08-11",
+              "2016-08-12",
+              "2016-08-15",
+              "2016-08-16",
+              "2016-08-17",
+              "2016-08-18",
+              "2016-08-19",
+              "2016-08-22",
+              "2016-08-23",
+              "2016-08-24",
+              "2016-08-25",
+              "2016-08-26",
+              "2016-08-29",
+              "2016-08-30",
+              "2016-08-31",
+              "2016-09-01",
+              "2016-09-02",
+              "2016-09-05",
+              "2016-10-10",
+              "2016-11-04",
+              "2016-11-11",
+              "2016-11-23",
+              "2016-11-24",
+              "2016-11-25",
+              "2016-12-26",
+              "2016-12-27",
+              "2016-12-28",
+              "2016-12-29",
+              "2016-12-30",
+              "2017-01-02",
+              "2017-01-03",
+              "2017-01-04",
+              "2017-01-05",
+              "2017-01-06",
+              "2017-01-16",
+              "2017-02-03",
+              "2017-02-20",
+              "2017-04-07",
+              "2017-04-10",
+              "2017-04-11",
+              "2017-04-12",
+              "2017-04-13",
+              "2017-04-14",
+              "2017-05-29",
+              "2017-06-21",
+              "2017-06-22",
+              "2017-06-23",
+              "2017-06-26",
+              "2017-06-27",
+              "2017-06-28",
+              "2017-06-29",
+              "2017-06-30",
+              "2017-07-03",
+              "2017-07-04",
+              "2017-07-05",
+              "2017-07-06",
+              "2017-07-07",
+              "2017-07-10",
+              "2017-07-11",
+              "2017-07-12",
+              "2017-07-13",
+              "2017-07-14",
+              "2017-07-17",
+              "2017-07-18",
+              "2017-07-19",
+              "2017-07-20",
+              "2017-07-21",
+              "2017-07-24",
+              "2017-07-25",
+              "2017-07-26",
+              "2017-07-27",
+              "2017-07-28",
+              "2017-07-31",
+              "2017-08-01",
+              "2017-08-02",
+              "2017-08-03",
+              "2017-08-04",
+              "2017-08-07",
+              "2017-08-08",
+              "2017-08-09",
+              "2017-08-10",
+              "2017-08-11",
+              "2017-08-14",
+              "2017-08-15",
+              "2017-08-16",
+              "2017-08-17",
+              "2017-08-18",
+              "2017-08-21",
+              "2017-08-22",
+              "2017-08-23",
+              "2017-08-24",
+              "2017-08-25",
+              "2017-08-28",
+              "2017-08-29",
+              "2017-08-30",
+              "2017-08-31",
+              "2017-09-01",
+              "2017-09-04",
+              "2017-10-09",
+              "2017-11-03",
+              "2017-11-22",
+              "2017-11-23",
+              "2017-11-24",
+              "2017-12-25",
+              "2017-12-26",
+              "2017-12-27",
+              "2017-12-28",
+              "2017-12-29")
+cps_dates <- dates(cps_dates,format="Y-m-d")
 
 
 
@@ -109,6 +267,7 @@ nrides_85  <- 0
 
 
 # pre-allocate data frame columns for the for-loop
+df$cps            <- NA
 df$isholiday      <- NA
 df$isweekend      <- NA
 df$AWND           <- NA
@@ -131,44 +290,68 @@ df$nrides_268r    <- 0
 df$nrides_85r     <- 0
 
 
-
 # Count the number of rides for the five most popular stations
+#   Total rides per day of the five most popular stations
+#   and total rides per day that start and stop at those
+#   five most popular stations
+#   For example, nrides_76 is the total number of daily rides
+#     departing from station 76 while ntides_76r is the total
+#     number of daily rides that start and stop at station
+#     76.
 for (i in 1:nrow(Divvy_Trips)) {
 
   if (Divvy_Trips$from_station_id[i] == 76) {
-    df$nrides_76[df$date == Divvy_Trips$date[i]] = df$nrides_76[df$date == Divvy_Trips$date[i]] + 1
-    if (Divvy_Trips$from_station_id[i] == 76 & Divvy_Trips$to_station_id[i]== 76) {
-      df$nrides_76r[df$date == Divvy_Trips$date[i]] = df$nrides_76r[df$date == Divvy_Trips$date[i]] + 1
+    df$nrides_76[df$date == Divvy_Trips$date[i]] = 
+      df$nrides_76[df$date == Divvy_Trips$date[i]] + 1
+    
+    if (Divvy_Trips$from_station_id[i] == 76 &
+        Divvy_Trips$to_station_id[i]== 76) {
+      df$nrides_76r[df$date == Divvy_Trips$date[i]] = 
+        df$nrides_76r[df$date == Divvy_Trips$date[i]] + 1
     }
   } 
   else if (Divvy_Trips$from_station_id[i] == 35) {
-    df$nrides_35[df$date == Divvy_Trips$date[i]] = df$nrides_35[df$date == Divvy_Trips$date[i]] + 1
-    if (Divvy_Trips$from_station_id[i] == 35 & Divvy_Trips$to_station_id[i]== 35) {
-      df$nrides_35r[df$date == Divvy_Trips$date[i]] = df$nrides_35r[df$date == Divvy_Trips$date[i]] + 1
+    df$nrides_35[df$date == Divvy_Trips$date[i]] = 
+      df$nrides_35[df$date == Divvy_Trips$date[i]] + 1
+    
+    if (Divvy_Trips$from_station_id[i] == 35 & 
+        Divvy_Trips$to_station_id[i]== 35) {
+      df$nrides_35r[df$date == Divvy_Trips$date[i]] = 
+        df$nrides_35r[df$date == Divvy_Trips$date[i]] + 1
     }
   }
   else if (Divvy_Trips$from_station_id[i] == 177) {
-    df$nrides_177[df$date == Divvy_Trips$date[i]] = df$nrides_177[df$date == Divvy_Trips$date[i]] + 1
-    if (Divvy_Trips$from_station_id[i] == 177 & Divvy_Trips$to_station_id[i]== 177) {
-      df$nrides_177r[df$date == Divvy_Trips$date[i]] = df$nrides_177r[df$date == Divvy_Trips$date[i]] + 1
+    df$nrides_177[df$date == Divvy_Trips$date[i]] = 
+      df$nrides_177[df$date == Divvy_Trips$date[i]] + 1
+    
+    if (Divvy_Trips$from_station_id[i] == 177 & 
+        Divvy_Trips$to_station_id[i]== 177) {
+      df$nrides_177r[df$date == Divvy_Trips$date[i]] = 
+        df$nrides_177r[df$date == Divvy_Trips$date[i]] + 1
     }
   }
   else if (Divvy_Trips$from_station_id[i] == 268) {
-    df$nrides_268[df$date == Divvy_Trips$date[i]] = df$nrides_268[df$date == Divvy_Trips$date[i]] + 1
-    if (Divvy_Trips$from_station_id[i] == 268 & Divvy_Trips$to_station_id[i]== 268) {
-      df$nrides_268r[df$date == Divvy_Trips$date[i]] = df$nrides_268r[df$date == Divvy_Trips$date[i]] + 1
+    df$nrides_268[df$date == Divvy_Trips$date[i]] = 
+      df$nrides_268[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 268 & 
+        Divvy_Trips$to_station_id[i]== 268) {
+      df$nrides_268r[df$date == Divvy_Trips$date[i]] = 
+        df$nrides_268r[df$date == Divvy_Trips$date[i]] + 1
     }
   }
   else if (Divvy_Trips$from_station_id[i] == 85) {
-    df$nrides_85[df$date == Divvy_Trips$date[i]] = df$nrides_85[df$date == Divvy_Trips$date[i]] + 1
-    if (Divvy_Trips$from_station_id[i] == 85 & Divvy_Trips$to_station_id[i]== 85) {
-      df$nrides_85r[df$date == Divvy_Trips$date[i]] = df$nrides_85r[df$date == Divvy_Trips$date[i]] + 1
+    df$nrides_85[df$date == Divvy_Trips$date[i]] = 
+      df$nrides_85[df$date == Divvy_Trips$date[i]] + 1
+    if (Divvy_Trips$from_station_id[i] == 85 & 
+        Divvy_Trips$to_station_id[i]== 85) {
+      df$nrides_85r[df$date == Divvy_Trips$date[i]] = 
+        df$nrides_85r[df$date == Divvy_Trips$date[i]] + 1
     }
   }
 }
 
 
-# Count the number of rides per day (using start date)
+# Count the total number of rides per day (using start date)
 # Tabulate Dates of Divvy Data
 date_tab <- table(cut(Divvy_Trips$date, 'day'))
 # Format
@@ -182,21 +365,23 @@ for (i in 1:nrow(df)) {
 }
 
 
-
-
+# Add weather data from Chicago O'Hare airport
 for (i in 1:nrow(df)) {
   date                          <- df$date[i]
+  df$cps[df$date == date]       <- is.holiday(date, cps_dates)
   df$isholiday[df$date == date] <- is.holiday(date, myholidays)
   df$isweekend[df$date == date] <- is.weekend(date)
   df$AWND[df$date == date]      <- weather$AWND[weather$DATE==date]
   df$TMAX[df$date == date]      <- weather$TMAX[weather$DATE==date]
   df$TMIN[df$date == date]      <- weather$TMIN[weather$DATE==date]
   df$TAVG[df$date == date]      <- weather$TAVG[weather$DATE==date]
-  df$TRNG[df$date == date]      <- weather$TMAX[weather$DATE==date] - weather$TMIN[weather$DATE==date]
+  df$TRNG[df$date == date]      <- weather$TMAX[weather$DATE==date] - 
+    weather$TMIN[weather$DATE==date]
   df$PRCP[df$date == date]      <- weather$PRCP[weather$DATE==date]
   df$SNOW[df$date == date]      <- weather$SNOW[weather$DATE==date]
 }
 
+# Correlation Plot
 dfcor <- df
 dfcor$date <- NULL
 
@@ -204,9 +389,7 @@ correlations <- cor(dfcor)
 corrplot(correlations, method="number")
 
 
-
-
-# make columns for days of the week
+# make data frame columns for days of the week
 # it doesn't matter which day is which for now, just that
 #     they're consistent
 df$weekday_color <- 0
@@ -217,6 +400,7 @@ df$day4 <- 0
 df$day5 <- 0
 df$day6 <- 0
 
+# Also color the days of the week for visualization 
 cl = 1;
 for (i in 1:nrow(df)) {
   if (cl == 1) {
@@ -264,7 +448,7 @@ df$PRCP2 <- df$PRCP
 # first, model the number of rides per day
 model_nrides <- lm(nrides ~ isholiday + isweekend + AWND + TMAX + 
                      TMIN + TAVG + PRCP + PRCP2 + SNOW + 
-                     day1 + day2+ day3 + day4 + day5 + day6, data = df)
+                     day1 + day2+ day3 + day4 + day5 + day6, cps, data = df)
 summary(model_nrides)
 
 df$nrides_model <- predict(model_nrides,df)
@@ -296,11 +480,13 @@ model_nrides_76r <- lm(nrides_76r ~ isholiday + isweekend + AWND + TMAX +
 summary(model_nrides_76r)
 
 
-# save(correlations, date_frequency, df, dfcor, Divvy_Trips, 
-#      model_nrides, model_nrides_76, model_nrides_76r,
-#      station_id, hlist, myholidays, file = "Divvy.RData")
+save(correlations, date_frequency, df, dfcor, Divvy_Trips,
+     model_nrides, model_nrides_76, model_nrides_76r,
+     station_id, hlist, myholidays, file = "Divvy.RData")
 
-
+save(correlations, date_frequency, df, dfcor,
+     model_nrides, model_nrides_76, model_nrides_76r,
+     station_id, hlist, myholidays, file = "Divvy_DailyOnly.RData")
 
 
 # tail(Divvy_Trips$trip_id, n=1)
