@@ -271,6 +271,7 @@ df$nrides_model <- predict(model_nrides,df)
 
 
 plot(df$nrides_model-df$nrides, col=df$weekday_color)
+plot(df$nrides)
 df$nrides_diff   <- df$nrides_model-df$nrides
 
 
@@ -283,6 +284,8 @@ summary(model_nrides_76)
 df$nrides_76_model <- predict(model_nrides_76,df)
 
 plot(df$nrides_76_model-df$nrides_76, col=df$weekday_color)
+# plot(df$nrides_76)
+
 
 # third, model the number of rides per day from sstation 76 that also
 # end at station 76 
@@ -297,7 +300,7 @@ summary(model_nrides_76r)
 #      model_nrides, model_nrides_76, model_nrides_76r,
 #      station_id, hlist, myholidays, file = "Divvy.RData")
 
-/
+
 
 
 # tail(Divvy_Trips$trip_id, n=1)
